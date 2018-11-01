@@ -1,6 +1,10 @@
-﻿using System;
+﻿using EM.Calc.Core;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,73 +12,61 @@ namespace EM.Calc.ConsoleApp
 {
     class Program
     {
+        //[DllImport("LukoilCalcFinance.dll")]
+        //static extern string Name();
+
+        //[DllImport("LukoilCalcFinance.dll")]
+        //static extern double? Execute();
 
         static void Main(string[] args)
         {
+            double[] values;          
             var calc = new Core.Calc();
-            string[] keywords = { "sub", "pow", "exit" };
-           
+            string operands, operation;
+
             while (true)
             {
-               
-                string[] input = Console.ReadLine().Split(' ');
-                int n = input.Length;
-                double[] operands =  new double[n-1];
-                double j;
- 
-                for (int i = 1; i < n; i++)
+                string[] operations = calc.Operations
+                .Select(o => o.Name)
+                .ToArray();
+
+                if (args.Length == 0)
                 {
-                   if (double.TryParse(input[i], out j))
+                    Console.WriteLine("Operation list: ");
+
+                    foreach (var item in operations)
                     {
-                        operands[i - 1] = j;
-                    }              
-                    
-                }
+                        Console.WriteLine(item);
+                    }
 
-                switch (input[0])
+                    Console.WriteLine("Enter operation: ");
+                    operation = Console.ReadLine();
+
+                    Console.WriteLine("Enter operands (use space): ");
+                    operands = Console.ReadLine();
+                    values = ConvertToDouble(
+                        operands.Split(new[] { " ", ";" }, StringSplitOptions.RemoveEmptyEntries)
+                    );
+                }
+                else
                 {
-                    case "sub":
-                        {
-                            try
-                            {
-                                Console.WriteLine(calc.Substraction(operands));
-                            }
-                            catch
-                            {
-                                Console.WriteLine("invalid syntax");
-                            }
-                            
-                        }
-                        break;
-
-                    case "pow":
-                        {
-                            try
-                            {                               
-                                Console.WriteLine(calc.Exponentiation(operands));
-                            }
-                            catch
-                            {
-                                Console.WriteLine("invalid syntax");
-                            }
-
-                        }
-                        break;
-                    case "exit":
-                        {
-                            Environment.Exit(0);
-                        }
-                        break;
-
-                    default:
-                        {
-                            Console.WriteLine("Invalid command");
-                        }
-                        break;
+                    operation = args[0].ToLower();
+                    values = ConvertToDouble(args, 1);
                 }
-                
-            }
 
+                var result = calc.Execute(operation, values);
+                Console.WriteLine(result);
+            }
+            
         }
+
+        static double[] ConvertToDouble(string[] args, int start = 0)
+        {
+            return args.ToList()
+                .Skip(start)
+                .Select(Convert.ToDouble)
+                .ToArray();
+        }
+
     }
 }
