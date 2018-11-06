@@ -13,33 +13,17 @@ namespace EM.Calc.Web.Controllers
             return View();
         }
 
-        public ActionResult About(string r)
+        public ActionResult About()
         {    
-            //ViewBag.Message = "Hello ASP.NET Core";
-            ViewBag.Вася = $"{r} "; //все равно не выодит когда About/stroka
+
             return View();
 
         }
 
         public ActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
-
             return View();
         }
 
-        public ActionResult Calc(double? r, string oper)
-        {
-            //ViewBag.Message = "Your calculator.";
-
-
-            var pp = new[] { 1.1, 2, 3 };
-             var calc = new Core.Calc(); // просит манифест сборки, что нужно сделать кроме ссылки?
-
-            r = calc.Execute(oper, pp);
-     
-            ViewBag.Calc = $"{r} ";
-            return View();
-        }
     }
 }

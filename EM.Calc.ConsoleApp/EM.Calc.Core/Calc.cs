@@ -12,39 +12,63 @@ namespace EM.Calc.Core
     public class Calc
     {
         /// <summary>
-        /// Operations
-        /// </summary>
-        
+        /// Операции
+        /// </summary>/// 
+        /// <param name="path">Путь до сторонних библиотек с операциями</param>
         public IList<IOperation> Operations { get; set; }
-        public Calc()
+      
+        public Calc() : this("")
+        {
+
+        }
+
+        public Calc(string path) 
         {
             Operations = new List<IOperation>();
-            
 
-            var dlllist = Directory.GetFiles(Environment.CurrentDirectory, "*.dll");
-
-            foreach (var dll in dlllist)
+            if (string.IsNullOrWhiteSpace(path))
             {
-                //Получить сборку по указанному пути 
-                Assembly asm = Assembly.LoadFile(dll);
-                // загрузить все типы из сборки
-                var types = asm.GetTypes();
-                //перебираем все классы в сборке
-                foreach (var item in types)
+                path = Environment.CurrentDirectory;
+            }
+
+            else
+            {
+                LoadOperations(Assembly.GetExecutingAssembly());
+            }
+
+            //var dllFiles = Directory.GetFiles(path, "*.dll", SearchOption.TopDirectoryOnly);
+            //foreach (var file in dllFiles)
+            //{
+            //    LoadOperations(Assembly.LoadFrom(file));
+            //}
+
+        }
+
+        private void LoadOperations(Assembly assembly)
+        {
+            // загрузить все типы из сборки
+            var types = assembly.GetTypes();
+
+            var needType = typeof(IOperation);
+
+            // перебираем все классы в сборке
+            foreach (var item in types.Where(t => t.IsClass && !t.IsAbstract))
+            {
+                var interfaces = item.GetInterfaces();
+
+                // если класс реализаует заданный интерфейс
+                if (interfaces.Contains(needType))
                 {
-                    //  если класс реализаует заданный интерфейс
-                    if (item.GetInterface("IOperation") != null)
+                    //добавляем в операции экземпляр данного класса
+                    var instance = Activator.CreateInstance(item);
+
+                    var operation = instance as IOperation;
+                    if (operation != null)
                     {
-                        //добавляем в операции экземпляр данного класса
-                        var instanse = Activator.CreateInstance(item);
-                        var operation = instanse as IOperation;
-                        if (operation != null)
-                        {
-                            Operations.Add(operation);
-                        }
+                        Operations.Add(operation);
                     }
-                }         
-            }  
+                }
+            }
         }
 
         public double? Execute(string operName, double[] values)
@@ -60,10 +84,11 @@ namespace EM.Calc.Core
              }
              return null;
         }
-    
-   
+
+
+        #region Old
         [Obsolete("Не используйте это, есть же Execute")]
-        #region
+
         public double Sum(double[] args)
         {
             return args.Sum();
