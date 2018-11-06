@@ -27,44 +27,33 @@ namespace EM.Calc.Web.Controllers
         [HttpGet]
         public ActionResult Input()
         {
-            List<string> list = new List<string>();
-
-            foreach (var item in calc.Operations)
+            var model = new InputModel
             {
-                list.Add(item.Name);
-            }
-
-            // Список операций
-            SelectList listOperations = new SelectList(list);
-
-            var model = new InputModel()
-            {
-                Operations = listOperations
+                Operations = calc.Operations
             };
 
             return View(model);
         }
 
         [HttpPost]
-        public ActionResult Input(InputModel model)
+        public PartialViewResult Input(InputModel model)
         {
-            model.Selected = Request.Form["Operations"].ToString();
-
 
             if (!ModelState.IsValid)
             {
-                return View(model);              
+                return null;              
             }
 
-            if (!calc.Operations.Any(m => m.Name == model.Selected))
+            if (!calc.Operations.Any(m => m.Name == model.Name))
             {
                 ModelState.AddModelError("Name", "Такой операции нет");
-                return View(model);
+                return null;
             }
                 
     
-            var result = Calc(model.Selected, model.Args.Split(' ').Select(Convert.ToDouble).ToArray());
-            return View("Execute", result);
+            var result = Calc(model.Name, model.Args);
+
+            return PartialView("Execute", result);
         }
 
         private OperationResult Calc(string oper, double[] args)

@@ -1,0 +1,9 @@
+﻿CREATE TABLE [dbo].[Operation]
+(
+	[Name] NVARCHAR(50) NOT NULL,
+	[Rating] INT NOT NULL,
+	[ArgsCount] INT NOT NULL,
+	[Owner] NVARCHAR(50) NOT NULL,
+	[Id] INT NOT NULL PRIMARY KEY
+
+)
